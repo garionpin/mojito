@@ -6,6 +6,7 @@ import com.box.l10n.mojito.okapi.filters.RemoveUntranslatedStategyAnnotation;
 import com.box.l10n.mojito.okapi.filters.RemoveUntranslatedStrategy;
 import com.box.l10n.mojito.okapi.steps.AbstractMd5ComputationStep;
 import com.box.l10n.mojito.okapi.steps.OutputDocumentPostProcessingAnnotation;
+import com.box.l10n.mojito.service.tm.TextUnitStatisticsStore;
 import com.box.l10n.mojito.service.tm.TranslatorWithInheritance;
 import com.box.l10n.mojito.service.tm.search.StatusFilter;
 import net.sf.okapi.common.Event;
@@ -39,26 +40,34 @@ public class TranslateStep extends AbstractMd5ComputationStep {
     InheritanceMode inheritanceMode;
     RawDocument rawDocument;
     boolean rawDocumentProcessingEnabled = false;
+    private TextUnitStatisticsStore textUnitStatisticsStore;
+    Double usageThreshold;
+    String unusedStringsFormat;
 
     /**
      * Creates the {@link TranslateStep} for a given asset.
-     *
-     * @param asset            {@link Asset} that will be used to lookup translations
+     *  @param asset            {@link Asset} that will be used to lookup translations
      * @param repositoryLocale used to fetch translations. It can be different
      *                         from the locale used in the Okapi pipeline ({@link #targetLocale}) in
      *                         case the file needs to be generated for a tag that is different from the
      *                         locale used for translation.
      * @param inheritanceMode
      * @param status
+     * @param usageThreshold
+     * @param unusedStringsFormat
      */
-    public TranslateStep(Asset asset, RepositoryLocale repositoryLocale, InheritanceMode inheritanceMode, Status status) {
+    public TranslateStep(Asset asset, RepositoryLocale repositoryLocale, InheritanceMode inheritanceMode, Status status, Double usageThreshold, String unusedStringsFormat) {
         this.asset = asset;
         this.inheritanceMode = inheritanceMode;
         this.repositoryLocale = repositoryLocale;
 
         StatusFilter statusFilter = getStatusFilter(status);
 
+        this.usageThreshold = usageThreshold;
+        this.unusedStringsFormat = unusedStringsFormat;
+
         this.translatorWithInheritance = new TranslatorWithInheritance(asset, repositoryLocale, inheritanceMode, statusFilter);
+        this.textUnitStatisticsStore = new TextUnitStatisticsStore(asset);
     }
 
     private StatusFilter getStatusFilter(Status status) {
@@ -126,6 +135,17 @@ public class TranslateStep extends AbstractMd5ComputationStep {
                     }
                 }
             } else {
+                Double textUnitUsage = textUnitStatisticsStore.getLastPeriodUsage(md5);
+
+                if (usageThreshold != null) {
+                    if (textUnitUsage > usageThreshold) {
+                        // TODO GARION TEMP DEBUG HACK!!! to remove...
+                        translation = "✓" + translation;
+                    } else {
+                        translation = String.format(unusedStringsFormat, source);
+                    }
+                }
+
                 logger.debug("Set translation for text unit with name: {}, translation: {}", name, translation);
                 textUnit.setTarget(targetLocale, new TextContainer(translation));
             }

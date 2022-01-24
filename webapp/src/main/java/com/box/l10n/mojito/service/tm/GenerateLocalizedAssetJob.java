@@ -53,7 +53,9 @@ public class GenerateLocalizedAssetJob extends QuartzPollableJob<LocalizedAssetB
                 localizedAssetBody.getFilterConfigIdOverride(),
                 localizedAssetBody.getFilterOptions(),
                 localizedAssetBody.getStatus(),
-                localizedAssetBody.getInheritanceMode()
+                localizedAssetBody.getInheritanceMode(),
+                localizedAssetBody.getUsageThreshold(),
+                localizedAssetBody.getUnusedStringsFormat()
         );
 
         localizedAssetBody.setContent(generateLocalized);

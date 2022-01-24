@@ -75,6 +75,10 @@ public class LocalizedAssetBody {
 
     Status status = Status.ALL;
 
+    Double usageThreshold = null;
+
+    String unusedStringsFormat = null;
+
     public Long getAssetId() {
         return assetId;
     }
@@ -145,5 +149,21 @@ public class LocalizedAssetBody {
 
     public void setFilterOptions(List<String> filterOptions) {
         this.filterOptions = filterOptions;
+    }
+
+    public Double getUsageThreshold() {
+        return usageThreshold;
+    }
+
+    public void setUsageThreshold(Double usageThreshold) {
+        this.usageThreshold = usageThreshold;
+    }
+
+    public String getUnusedStringsFormat() {
+        return unusedStringsFormat;
+    }
+
+    public void setUnusedStringsFormat(String unusedStringsFormat) {
+        this.unusedStringsFormat = unusedStringsFormat;
     }
 }

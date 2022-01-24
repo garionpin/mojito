@@ -939,6 +939,7 @@ public class TMService {
      * @param inheritanceMode
      * @return the localized asset
      */
+
     public String generateLocalized(
             Asset asset,
             String content,
@@ -948,6 +949,30 @@ public class TMService {
             List<String> filterOptions,
             Status status,
             InheritanceMode inheritanceMode) throws UnsupportedAssetFilterTypeException {
+        return generateLocalized(
+                asset,
+                content,
+                repositoryLocale,
+                outputBcp47tag,
+                filterConfigIdOverride,
+                filterOptions,
+                status,
+                inheritanceMode,
+                null,
+                null);
+    }
+
+    public String generateLocalized(
+            Asset asset,
+            String content,
+            RepositoryLocale repositoryLocale,
+            String outputBcp47tag,
+            FilterConfigIdOverride filterConfigIdOverride,
+            List<String> filterOptions,
+            Status status,
+            InheritanceMode inheritanceMode,
+            Double usageThreshold,
+            String unusedStringsFormat) throws UnsupportedAssetFilterTypeException {
 
         String bcp47Tag;
 
@@ -960,7 +985,7 @@ public class TMService {
 
         logger.debug("Configuring pipeline for localized XLIFF generation");
 
-        BasePipelineStep translateStep = (BasePipelineStep) new TranslateStep(asset, repositoryLocale, inheritanceMode, status);
+        BasePipelineStep translateStep = (BasePipelineStep) new TranslateStep(asset, repositoryLocale, inheritanceMode, status, usageThreshold, unusedStringsFormat);
         return generateLocalizedBase(asset, content, filterConfigIdOverride, filterOptions, translateStep, bcp47Tag);
     }
 

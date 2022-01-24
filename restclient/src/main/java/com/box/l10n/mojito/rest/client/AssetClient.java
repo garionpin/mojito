@@ -74,6 +74,8 @@ public class AssetClient extends BaseClient {
      * @param filterConfigIdOverride Optional, can be null. Allows to specify a
      * specific Okapi filter to use to process the asset
      * @param filterOptions
+     * @param usageThreshold
+     * @param unusedStringsFormat
      * @return the localized asset content
      */
     public LocalizedAssetBody getLocalizedAssetForContent(
@@ -85,6 +87,20 @@ public class AssetClient extends BaseClient {
             List<String> filterOptions,
             LocalizedAssetBody.Status status,
             LocalizedAssetBody.InheritanceMode inheritanceMode) {
+        return getLocalizedAssetForContent(assetId, localeId, content, outputBcp47tag, filterConfigIdOverride, filterOptions, status, inheritanceMode, null, null);
+    }
+    
+    public LocalizedAssetBody getLocalizedAssetForContent(
+            Long assetId,
+            Long localeId,
+            String content,
+            String outputBcp47tag,
+            FilterConfigIdOverride filterConfigIdOverride,
+            List<String> filterOptions,
+            LocalizedAssetBody.Status status,
+            LocalizedAssetBody.InheritanceMode inheritanceMode,
+            Double usageThreshold,
+            String unusedStringsFormat) {
         logger.debug("Getting localized asset with asset id = {}, locale id = {}, outputBcp47tag: {}", assetId, localeId, outputBcp47tag);
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder
@@ -99,6 +115,8 @@ public class AssetClient extends BaseClient {
         localizedAssetBody.setFilterOptions(filterOptions);
         localizedAssetBody.setInheritanceMode(inheritanceMode);
         localizedAssetBody.setStatus(status);
+        localizedAssetBody.setUsageThreshold(usageThreshold);
+        localizedAssetBody.setUnusedStringsFormat(unusedStringsFormat);
 
         return authenticatedRestTemplate.postForObject(uriBuilder.toUriString(),
                 localizedAssetBody,
@@ -113,7 +131,9 @@ public class AssetClient extends BaseClient {
             FilterConfigIdOverride filterConfigIdOverride,
             List<String> filterOptions,
             LocalizedAssetBody.Status status,
-            LocalizedAssetBody.InheritanceMode inheritanceMode) {
+            LocalizedAssetBody.InheritanceMode inheritanceMode,
+            Double usageThreshold,
+            String unusedStringsFormat) {
         logger.debug("Getting localized asset with asset id = {}, locale id = {}, outputBcp47tag: {}", assetId, localeId, outputBcp47tag);
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder
@@ -128,6 +148,8 @@ public class AssetClient extends BaseClient {
         localizedAssetBody.setFilterOptions(filterOptions);
         localizedAssetBody.setInheritanceMode(inheritanceMode);
         localizedAssetBody.setStatus(status);
+        localizedAssetBody.setUsageThreshold(usageThreshold);
+        localizedAssetBody.setUnusedStringsFormat(unusedStringsFormat);
 
         PollableTask pollableTask = authenticatedRestTemplate.postForObject(uriBuilder.toUriString(),
                 localizedAssetBody,
