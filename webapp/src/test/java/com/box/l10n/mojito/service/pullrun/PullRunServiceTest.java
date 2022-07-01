@@ -3,6 +3,7 @@ package com.box.l10n.mojito.service.pullrun;
 import com.box.l10n.mojito.entity.Asset;
 import com.box.l10n.mojito.entity.PullRun;
 import com.box.l10n.mojito.entity.PullRunAsset;
+import com.box.l10n.mojito.entity.PullRunTextUnitVariant;
 import com.box.l10n.mojito.entity.Repository;
 import com.box.l10n.mojito.entity.TMTextUnitVariant;
 import com.box.l10n.mojito.service.asset.AssetService;
@@ -16,10 +17,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author garion
@@ -28,6 +32,9 @@ public class PullRunServiceTest extends ServiceTestBase {
 
     @Rule
     public TestIdWatcher testIdWatcher = new TestIdWatcher();
+
+    @Autowired
+    EntityManager entityManager;
 
     @Autowired
     AssetService assetService;
@@ -134,5 +141,44 @@ public class PullRunServiceTest extends ServiceTestBase {
         List<TMTextUnitVariant> tmTextUnitVariants = pullRunService.getTextUnitVariants(pullRun, PageRequest.of(0,
                                                                                                                 Integer.MAX_VALUE));
         Assert.assertEquals(2, tmTextUnitVariants.size());
+    }
+
+    /*
+    In application.properties enable:
+
+        spring.jpa.properties.hibernate.show_sql=true
+        spring.jpa.properties.hibernate.format_sql=true
+        logging.level.org.hibernate.SQL=DEBUG
+
+        Run this as is, then enable @BatchSize on PullRunAsset
+     */
+    @Test
+    @Transactional
+    public void testPullMultiple() {
+        PullRun pullRun = pullRunService.createPullRun(repository, "testPullMultiple");
+        PullRun pullRun2 = pullRunService.createPullRun(repository, "testPullMultiple2");
+        PullRun pullRun3 = pullRunService.createPullRun(repository, "testPullMultiple3");
+
+        List<TMTextUnitVariant> textUnitVariants = Arrays.asList(tmTestData.addCurrentTMTextUnitVariant1FrFR,
+                                                                 tmTestData.addCurrentTMTextUnitVariant2FrCA,
+                                                                 tmTestData.addCurrentTMTextUnitVariant1KoKR,
+                                                                 tmTestData.addCurrentTMTextUnitVariant3FrCA,
+                                                                 tmTestData.addCurrentTMTextUnitVariant3FrFR);
+        pullRunService.associatePullRunToTextUnitVariants(pullRun, asset,
+                                                          textUnitVariants);
+        pullRunService.associatePullRunToTextUnitVariants(pullRun2, asset,
+                                                          textUnitVariants);
+        pullRunService.associatePullRunToTextUnitVariants(pullRun3, asset,
+                                                          textUnitVariants);
+
+        // let's start with no data in the cache
+        entityManager.flush();
+        entityManager.clear();
+
+        List<PullRunTextUnitVariant> variants = pullRunTextUnitVariantRepository.findAll();
+
+        for (PullRunTextUnitVariant tu : variants) {
+            System.out.println(tu.getPullRunAsset().getAsset().getId());
+        }
     }
 }

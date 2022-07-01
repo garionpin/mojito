@@ -24,7 +24,7 @@ import java.util.Set;
                 @Index(name = "UK__PULL_RUN_ASSET__PULL_RUN_ID__ASSET_ID", columnList = "pull_run_id, asset_id", unique = true)
         }
 )
-@BatchSize(size = 1000)
+//@BatchSize(size = 1000)
 public class PullRunAsset extends SettableAuditableEntity {
     @ManyToOne
     @JsonBackReference
